@@ -9,7 +9,6 @@ async function start() {
   });
 
   nc.subscribe('post.entry', (error, message) => {
-    console.log(message);
     const reply = message.reply;
     const { text } = message.data.entry;
     const { id: creatorId } = message.data.creator;

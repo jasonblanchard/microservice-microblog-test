@@ -9,15 +9,15 @@ function sleep(n) {
   });
 }
 
+afterAll(() => {
+  nc.close();
+});
+
 describe('followers', () => {
   beforeAll(done => {
     nc.publish('store.destroy', () => {
       done();
     });
-  });
-
-  afterAll(() => {
-    nc.close();
   });
 
   it('lists entries in follower\'s timeline', async done => {
@@ -63,6 +63,33 @@ describe('followers', () => {
 
     expect(timelineBody.length).toEqual(1);
     expect(timelineBody[0].text).toEqual('Entry from user 1');
+    done();
+  });
+});
+
+describe('users', () => {
+  beforeAll(done => {
+    nc.publish('store.destroy', () => {
+      done();
+    });
+  });
+
+  it('creates and lists users', async done => {
+    await fetch('http://localhost:8080/users', {
+      method: 'POST',
+      body: JSON.stringify({
+        username: 'user1'
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    const listReply = await fetch('http://localhost:8080/users');
+    const listBody = await listReply.json();
+
+    expect(listBody.length).toEqual(1);
+    expect(listBody[0].username).toEqual('user1');
     done();
   });
 });

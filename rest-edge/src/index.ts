@@ -62,6 +62,35 @@ async function bootstrap() {
       });
   });
 
+  app.get('/users', (_request, response) => {
+    nc.request('store.list.kind.user', 1000)
+      .then(message => {
+        const users = message.data;
+        response.json(users);
+      })
+      .catch(error => {
+        console.log(`Never got a resonse, reason: ${error}`);
+        response.status(500).json({ error: 'no response' });
+      });
+  });
+
+  app.post('/users', async (request, response) => {
+    const { username } = request.body;
+;
+    nc.request('store.save.kind.user', 1000, {
+      username
+    })
+      .then(message => {
+        const { id, username } = message.data;
+        response.send({ id, username });
+      })
+      .catch(error => {
+        console.log(`Never got a resonse, reason: ${error}`);
+        response.status(500).json({ error: 'no response' });
+      });
+
+  });
+
   app.post('/follows', (request, response) => {
     const { toBeFollowedId } = request.body;
     const authenticatedUserId = getAuthenticatedUserId(request.headers.authorization);
