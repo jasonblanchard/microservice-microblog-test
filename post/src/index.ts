@@ -16,8 +16,6 @@ async function start() {
     if (reply) {
       nc.request('store.save.kind.entry', 1000, { text, creatorId })
         .then(message => {
-          console.log('here');
-
           const { text, id } = message.data;
           nc.publish(reply, { text, id, creatorId });
           nc.publish('info.entry', { text, id, creatorId });
