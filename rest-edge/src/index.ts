@@ -138,6 +138,11 @@ async function bootstrap() {
       });
   });
 
+  app.post('/reset', (_request, response) => {
+    nc.publish('store.destroy');
+    response.send(201);
+  });
+
   app.listen(port, () => console.log(`REST edge listening on port ${port}!`))
 }
 

@@ -74,7 +74,7 @@ describe('users', () => {
     });
   });
 
-  it('creates and lists users', async done => {
+  it.only('creates and lists users', async done => {
     await fetch('http://localhost:8080/users', {
       method: 'POST',
       body: JSON.stringify({
