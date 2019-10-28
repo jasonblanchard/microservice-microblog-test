@@ -27,6 +27,13 @@ async function start() {
           });
         });
       })
+      .then(() => {
+        // Also add your own posts to your own timeline
+        return nc.request('timeline.insert', 1000, {
+          userId,
+          entry
+        })
+      })
       .catch(error => {
         console.log(error);
       });
