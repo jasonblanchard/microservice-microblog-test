@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import io from 'socket.io-client';
 
 interface TimelineProps {
   authenticatedUserId: number;
@@ -22,16 +23,32 @@ function Entry({ entry }: EntryProps) {
 }
 
 export default function Timeline({ authenticatedUserId }: TimelineProps) {
-  const [entries, updateEntries] = useState<[Entry]>();
+  const [entries, updateEntries] = useState<Entry[]>();
 
   useEffect(() => {
     async function getTimeline() {
       const timelineResponse = await fetch(`/api/users/${authenticatedUserId}/timeline`);
       const entries = await timelineResponse.json();
-      updateEntries(entries);
+      updateEntries(entries.reverse());
     }
 
     getTimeline();
+  }, [authenticatedUserId]);
+
+  useEffect(() => {
+    const socket = io();
+    socket.emit('join', { userId: authenticatedUserId});
+
+    socket.on('entry', (entry: Entry) => {
+      updateEntries((entries) => {
+        if (!entries) return [entry];
+        return [entry, ...entries];
+      });
+    });
+
+    return function() {
+      socket.disconnect();
+    }
   }, [authenticatedUserId]);
 
   if (!entries) return <div>Loading...</div>
@@ -39,7 +56,7 @@ export default function Timeline({ authenticatedUserId }: TimelineProps) {
 
   return (
     <div>
-      {entries.reverse().map(entry => <Entry entry={entry} key={entry.id} />)}
+      {entries.map(entry => <Entry entry={entry} key={entry.id} />)}
     </div>
   )
 }

@@ -28,6 +28,8 @@ async function start() {
     if (reply) {
       nc.publish(reply, []);
     }
+
+    nc.publish('info.timeline', { userId, entry });
   });
 
   nc.subscribe('timeline.list', (error, message) => {

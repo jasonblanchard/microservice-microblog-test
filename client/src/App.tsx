@@ -31,7 +31,7 @@ const App: React.FC = () => {
   return (
     <>
       <select onChange={onChangeUserId}>
-        {userIds.map(userId => <option value={userId}>{userId}</option>)}
+        {userIds.map(userId => <option key={userId} value={userId}>{userId}</option>)}
       </select>
       <HomePage authenticatedUserId={userId} />
     </>

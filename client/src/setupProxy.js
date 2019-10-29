@@ -10,4 +10,12 @@ module.exports = function (app) {
       }
     })
   );
+
+  app.use(
+    '/socket.io',
+    proxy({
+      target: 'http://localhost:8081',
+      changeOrigin: true,
+    })
+  );
 };
