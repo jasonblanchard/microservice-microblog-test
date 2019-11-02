@@ -12,9 +12,10 @@ interface UserListProps {
 interface UserDisplayProps {
   user: User;
   authenticatedUserId: number;
+  onAfterClick: (userId: number) => void;
 }
 
-function UserDisplay({ user, authenticatedUserId }: UserDisplayProps) {
+function UserDisplay({ user, authenticatedUserId, onAfterClick }: UserDisplayProps) {
   function handleClick() {
     fetch('api/follows', {
       method: 'POST',
@@ -25,7 +26,9 @@ function UserDisplay({ user, authenticatedUserId }: UserDisplayProps) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${authenticatedUserId}`
       }
-    })
+    }).then(() => {
+      onAfterClick(user.id);
+    });
   }
 
   return (
@@ -37,7 +40,8 @@ function UserDisplay({ user, authenticatedUserId }: UserDisplayProps) {
 }
 
 export default function UserList({ authenticatedUserId }: UserListProps) {
-  const [users, updateUsers] = useState<[User]>();
+  const [users, updateUsers] = useState<User[]>();
+  const [follows, updateFollows] = useState<number[]>([]);
 
   useEffect(() => {
     async function getUser() {
@@ -46,15 +50,42 @@ export default function UserList({ authenticatedUserId }: UserListProps) {
       updateUsers(users);
     };
 
-    getUser();
-  }, []);
+    async function getFollows() {
+      const fetchResponse = await fetch(`/api/users/${authenticatedUserId}/follows`);
+      const follows = await fetchResponse.json();
+      updateFollows(follows);
+    };
 
-  if (!users) return <div>Loading...</div>;
+    getUser();
+    getFollows();
+  }, [authenticatedUserId]);
+
+  if (!users || !follows) return <div>Loading...</div>;
+
+  const filteredUsers = users.filter(user => !follows.includes(Number(user.id)) && user.id !== authenticatedUserId);
+
+  interface UsersById {
+    [key: string]: User;
+  }
+
+  const usersById = users.reduce((usersById: UsersById, user) => {
+    usersById[user.id] = user;
+    return usersById;
+  }, {});
+
+  const friends = follows.map(id => usersById[id]);
+
+  function onAfterClickFollow(userId: number) {
+    updateFollows(follows => [...follows, userId]);
+  }
 
   return (
     <div>
-      Users:
-      {users.map(user => user.id !== authenticatedUserId && <UserDisplay key={user.id} user={user} authenticatedUserId={authenticatedUserId} />)}
+      <h2>Users:</h2>
+      {filteredUsers.length === 0 ? 'You are following everybody!' : filteredUsers.map(user => <UserDisplay key={user.id} user={user} authenticatedUserId={authenticatedUserId} onAfterClick={onAfterClickFollow} />)}
+      <hr />
+      <h2>Your friends:</h2>
+      {friends.length === 0 ? 'Follow some people' : friends.map(user => <div key={user.id}>{user.username}</div>)}
     </div>
   )
 }

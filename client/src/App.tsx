@@ -4,19 +4,19 @@ import HomePage from './pages/HomePage';
 
 interface User {
   id: Number;
+  username: String;
 }
 
 const App: React.FC = () => {
-  const [userIds, updateUserIds] = useState<[number]>();
+  const [users, updateUsers] = useState<User[]>();
   const [userId, updateUserId] = useState();
 
   useEffect(() => {
     async function getUsers() {
       const response = await fetch('/api/users');
       const users = await response.json();
-      const userIds = users.map((user: User) => user.id);
-      updateUserIds(userIds);
-      updateUserId(userIds[0]);
+      updateUsers(users);
+      updateUserId(users[0].id);
     }
 
     getUsers();
@@ -26,12 +26,12 @@ const App: React.FC = () => {
     updateUserId(Number(event.target.value));
   }
 
-  if (!userIds) return <div>Loading...</div>;
+  if (!users) return <div>Loading...</div>;
 
   return (
     <>
       <select onChange={onChangeUserId}>
-        {userIds.map(userId => <option key={userId} value={userId}>{userId}</option>)}
+        {users.map(user => <option key={String(user.id)} value={String(user.id)}>{`${user.id}: ${user.username}`}</option>)}
       </select>
       <HomePage authenticatedUserId={userId} />
     </>

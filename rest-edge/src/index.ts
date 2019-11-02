@@ -143,6 +143,18 @@ async function bootstrap() {
     response.send(201);
   });
 
+  app.get('/users/:id/follows', (request, response) => {
+    nc.request('follows.by.user', 1000, { userId: request.params.id})
+      .then(message => {
+        const follows = message.data;
+        response.json(follows);
+      })
+      .catch(error => {
+        console.log(error);
+        response.status(500).json({ error });
+      });
+  });
+
   app.listen(port, () => console.log(`REST edge listening on port ${port}!`))
 }
 

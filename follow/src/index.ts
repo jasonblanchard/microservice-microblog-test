@@ -14,6 +14,7 @@ interface FollowMapping {
 }
 
 let followersByUserId: FollowMapping = {};
+let followsByUserId: FollowMapping = {};
 
 async function start() {
   console.log('starting');
@@ -29,12 +30,23 @@ async function start() {
     const { requestor, toBeFollowed } = input;
 
     followersByUserId[toBeFollowed.id] ? followersByUserId[toBeFollowed.id].add(requestor.id) : followersByUserId[toBeFollowed.id] = new Set([requestor.id]);
+    followsByUserId[requestor.id] ? followsByUserId[requestor.id].add(toBeFollowed.id) : followsByUserId[requestor.id] = new Set([toBeFollowed.id]);
 
     if (reply) {
       nc.publish(reply);
     }
   }, {
     queue: 'follow-service'
+  });
+
+  nc.subscribe('follows.by.user', (error, message) => {
+    const reply = message.reply;
+    const { userId } = message.data;
+    const follows = followsByUserId[userId] ? Array.from(followsByUserId[userId]) : [];
+
+    if (reply) {
+      nc.publish(reply, follows);
+    }
   });
 
   nc.subscribe('store.list.kind.followers', (error, message) => {
