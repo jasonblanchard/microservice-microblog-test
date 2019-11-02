@@ -1,5 +1,11 @@
 import { connect, Payload } from 'ts-nats';
-import { SSL_OP_NETSCAPE_CA_DN_BUG } from 'constants';
+
+interface InfoEntryContextMap {
+  creator: {
+    id: string;
+    username: string;
+  }
+}
 
 async function start() {
   console.log('start');
@@ -12,15 +18,34 @@ async function start() {
   nc.subscribe('info.entry', (error, message) => {
     const entry = message.data;
     const { creatorId: userId } = entry;
-    nc.request('store.list.kind.followers', 1000, { userId })
+    const contextMap: InfoEntryContextMap = {
+      creator: {
+        id: '',
+        username: ''
+      }
+    };
+
+    nc.request('store.get.kind.user', 1000, { id: userId })
+      .then(message => {
+        const { id, username } = message.data;
+        contextMap.creator = {
+          id,
+          username,
+        }
+        return nc.request('store.list.kind.followers', 1000, { userId })
+      })
       .then(message => {
         const followers = message.data;
-        console.log(userId, followers);
-
         followers.forEach((followerId: number) => {
           nc.request('timeline.insert', 1000, {
             userId: followerId,
-            entry
+            entry: {
+              ...entry,
+              creator: {
+                id: contextMap.creator.id,
+                username: contextMap.creator.username
+              }
+            }
           })
           .catch(error => {
             throw error;
@@ -31,7 +56,13 @@ async function start() {
         // Also add your own posts to your own timeline
         return nc.request('timeline.insert', 1000, {
           userId,
-          entry
+          entry: {
+            ...entry,
+            creator: {
+              id: contextMap.creator.id,
+              username: contextMap.creator.username
+            }
+          }
         })
       })
       .catch(error => {

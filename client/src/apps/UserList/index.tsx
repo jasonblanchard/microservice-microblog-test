@@ -83,7 +83,6 @@ export default function UserList({ authenticatedUserId }: UserListProps) {
     <div>
       <h2>Users:</h2>
       {filteredUsers.length === 0 ? 'You are following everybody!' : filteredUsers.map(user => <UserDisplay key={user.id} user={user} authenticatedUserId={authenticatedUserId} onAfterClick={onAfterClickFollow} />)}
-      <hr />
       <h2>Your friends:</h2>
       {friends.length === 0 ? 'Follow some people' : friends.map(user => <div key={user.id}>{user.username}</div>)}
     </div>

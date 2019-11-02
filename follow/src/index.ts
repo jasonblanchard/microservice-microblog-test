@@ -63,7 +63,7 @@ async function start() {
 
   nc.subscribe('store.destroy', (error, message) => {
     followersByUserId = {};
-    // usersByFollower = {};
+    followsByUserId = {};
   });
 }
 

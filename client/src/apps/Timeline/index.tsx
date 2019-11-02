@@ -8,6 +8,9 @@ interface TimelineProps {
 interface Entry {
   id: number;
   text: string;
+  creator: {
+    username: string;
+  }
 }
 
 interface EntryProps {
@@ -17,7 +20,7 @@ interface EntryProps {
 function Entry({ entry }: EntryProps) {
   return (
     <div>
-      {entry.text}
+      <strong>{entry.creator.username}: </strong>{entry.text}
     </div>
   );
 }

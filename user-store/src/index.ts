@@ -45,6 +45,17 @@ async function start() {
     queue: 'user-store-service'
   });
 
+  nc.subscribe('store.get.kind.user', (error, message) => {
+    const { id } = message.data;
+    const user = usersById[id];
+
+    if (message.reply) {
+      nc.publish(message.reply, user);
+    }
+  }, {
+    queue: 'user-store-service'
+  });
+
   nc.subscribe('store.destroy', (error, message) => {
     usersById = {};
   });

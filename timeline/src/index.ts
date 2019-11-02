@@ -26,7 +26,7 @@ async function start() {
     timelineByUser[userId] ? timelineByUser[userId].push(entry) : timelineByUser[userId] = [entry];
 
     if (reply) {
-      nc.publish(reply, []);
+      nc.publish(reply);
     }
 
     nc.publish('info.timeline', { userId, entry });
