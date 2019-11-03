@@ -1,10 +1,12 @@
 import { connect, Payload } from 'ts-nats';
 
+interface User {
+  id: number;
+  username: string;
+}
+
 interface UsersById {
-  [key: string]: {
-    id: number,
-    username: string
-  }
+  [key: string]: User
 }
 
 let usersById: UsersById = {};

@@ -32,10 +32,9 @@ async function start() {
     followersByUserId[toBeFollowed.id] ? followersByUserId[toBeFollowed.id].add(requestor.id) : followersByUserId[toBeFollowed.id] = new Set([requestor.id]);
     followsByUserId[requestor.id] ? followsByUserId[requestor.id].add(toBeFollowed.id) : followsByUserId[requestor.id] = new Set([toBeFollowed.id]);
 
-    console.log('===', followersByUserId, followsByUserId);
-
     if (reply) {
       nc.publish(reply);
+      nc.publish('follow.user.info', { requestor, toBeFollowed });
     }
   }, {
     queue: 'follow-service'
@@ -45,7 +44,6 @@ async function start() {
     const reply = message.reply;
     const { userId } = message.data;
     const follows = followsByUserId[userId] ? Array.from(followsByUserId[userId]) : [];
-    console.log('===', userId, follows);
 
     if (reply) {
       nc.publish(reply, follows);

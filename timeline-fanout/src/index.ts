@@ -1,5 +1,22 @@
 import { connect, Payload } from 'ts-nats';
 
+interface Entry {
+  id: string;
+  text: string;
+  creatorId: string;
+}
+
+interface EntryForTimeline {
+  entry: {
+    id: string;
+    text: string;
+    creator: {
+      id: string;
+      username: string;
+    }
+  }
+}
+
 interface InfoEntryContextMap {
   creator: {
     id: string;
@@ -70,6 +87,46 @@ async function start() {
       });
   }, {
     queue: 'timeline-fanout-service',
+  });
+
+  nc.subscribe('follow.user.info', (error, message) => {
+    const { requestor, toBeFollowed } = message.data;
+
+    const contextMap: InfoEntryContextMap = {
+      creator: {
+        id: '',
+        username: ''
+      }
+    };
+
+    nc.request('store.get.kind.user', 1000, { id: toBeFollowed.id })
+      .then(message => {
+        const { id, username } = message.data;
+        contextMap.creator = {
+          id,
+          username,
+        }
+        return nc.request('entries.by.user', 1000, { userId: toBeFollowed.id })
+      })
+      .then(message => {
+        const entries = message.data;
+        const entriesForTimeline: EntryForTimeline[] = entries.reduce((entriesForTimeline: EntryForTimeline[], entry: Entry) => {
+          return [{
+            ...entry,
+            creator: {
+              id: contextMap.creator.id,
+              username: contextMap.creator.username,
+            }
+          }, ...entriesForTimeline];
+        }, []);
+        nc.request('timeline.insert.list', 1000, { userId: requestor.id, entries: entriesForTimeline });
+      })
+      .catch(error => {
+        console.log(error);
+      })
+  })
+  .catch(error => {
+    console.log(error);
   });
 }
 

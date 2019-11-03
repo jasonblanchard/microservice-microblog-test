@@ -1,11 +1,13 @@
 import { connect, Payload } from 'ts-nats';
 
+interface Entry {
+  id: number,
+  text: string,
+  creatorId: number
+}
+
 interface EntriesById {
-  [key: string]: {
-    id: number,
-    text: string,
-    creatorId: number
-  }
+  [key: string]: Entry
 }
 
 let entriesById: EntriesById = {};
@@ -51,6 +53,21 @@ async function start() {
   }, {
     queue: 'entry-store-service'
   });
+
+  nc.subscribe('entries.by.user', (error, message) => {
+    const { userId } = message.data;
+
+    const entries = Object.keys(entriesById)
+      .map(id => entriesById[id])
+      .reduce((entries: Entry[], entry) => {
+        if (entry.creatorId === userId) return [entry, ...entries];
+        return entries;
+      }, []);
+
+    if (message.reply) {
+      nc.publish(message.reply, entries);
+    }
+  })
 }
 
 start();

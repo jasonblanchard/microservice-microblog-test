@@ -23,13 +23,32 @@ async function start() {
     const reply = message.reply;
     const { userId, entry } = message.data;
 
-    timelineByUser[userId] ? timelineByUser[userId].push(entry) : timelineByUser[userId] = [entry];
+    if (timelineByUser[userId] && !timelineByUser[userId].some(timelineEntry => timelineEntry.id === entry.id)) {
+      timelineByUser[userId].push(entry);
+    } else {
+      timelineByUser[userId] = [entry];
+    }
 
     if (reply) {
       nc.publish(reply);
     }
 
     nc.publish('info.timeline', { userId, entry });
+  }, {
+    queue: 'timeline-service',
+  });
+
+  nc.subscribe('timeline.insert.list', (error, message) => {
+    const reply = message.reply;
+    const { userId, entries } = message.data;
+
+    entries.forEach((entry: Entry) => {
+      nc.publish('timeline.insert', { userId, entry });
+    });
+
+    if (reply) {
+      nc.publish(reply);
+    }
   }, {
     queue: 'timeline-service',
   });
