@@ -1,5 +1,5 @@
 {
-  "name": "timeline_fanout",
+  "name": "timeline-fanout",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
