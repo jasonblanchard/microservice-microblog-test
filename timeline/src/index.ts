@@ -30,6 +30,8 @@ async function start() {
     }
 
     nc.publish('info.timeline', { userId, entry });
+  }, {
+    queue: 'timeline-service',
   });
 
   nc.subscribe('timeline.list', (error, message) => {
@@ -41,10 +43,14 @@ async function start() {
     if (reply) {
       nc.publish(reply, timeline);
     }
+  }, {
+    queue: 'timeline-service',
   });
 
   nc.subscribe('store.destroy', (error, message) => {
     timelineByUser = {};
+  }, {
+    queue: 'timeline-service',
   });
 }
 

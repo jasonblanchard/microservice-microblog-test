@@ -26,6 +26,8 @@ async function start() {
     if (sockets) {
       sockets.forEach((socket: Socket) => socket.emit('entry', entry));
     }
+  }, {
+    queue: 'timeline-stream-service',
   });
 
   io.on('connection', socket => {

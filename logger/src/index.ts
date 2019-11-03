@@ -9,7 +9,7 @@ async function start() {
     payload: Payload.JSON
   });
 
-  nc.subscribe('*.*', (error, message) => {
+  nc.subscribe('*.>', (error, message) => {
     console.log(message);
     console.log("\n");
   });

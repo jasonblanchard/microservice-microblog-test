@@ -58,6 +58,8 @@ async function start() {
 
   nc.subscribe('store.destroy', (error, message) => {
     usersById = {};
+  }, {
+    queue: 'user-store-service'
   });
 }
 

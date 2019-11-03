@@ -32,6 +32,8 @@ async function start() {
     followersByUserId[toBeFollowed.id] ? followersByUserId[toBeFollowed.id].add(requestor.id) : followersByUserId[toBeFollowed.id] = new Set([requestor.id]);
     followsByUserId[requestor.id] ? followsByUserId[requestor.id].add(toBeFollowed.id) : followsByUserId[requestor.id] = new Set([toBeFollowed.id]);
 
+    console.log('===', followersByUserId, followsByUserId);
+
     if (reply) {
       nc.publish(reply);
     }
@@ -43,10 +45,13 @@ async function start() {
     const reply = message.reply;
     const { userId } = message.data;
     const follows = followsByUserId[userId] ? Array.from(followsByUserId[userId]) : [];
+    console.log('===', userId, follows);
 
     if (reply) {
       nc.publish(reply, follows);
     }
+  }, {
+    queue: 'follow-service'
   });
 
   nc.subscribe('store.list.kind.followers', (error, message) => {
@@ -57,6 +62,8 @@ async function start() {
     if (reply) {
       nc.publish(reply, followers);
     }
+  }, {
+    queue: 'follow-service'
   }).catch(error => {
     console.log(error);
   });
@@ -64,6 +71,8 @@ async function start() {
   nc.subscribe('store.destroy', (error, message) => {
     followersByUserId = {};
     followsByUserId = {};
+  }, {
+    queue: 'follow-service'
   });
 }
 

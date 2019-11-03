@@ -68,6 +68,8 @@ async function start() {
       .catch(error => {
         console.log(error);
       });
+  }, {
+    queue: 'timeline-fanout-service',
   });
 }
 

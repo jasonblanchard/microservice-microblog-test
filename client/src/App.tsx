@@ -28,6 +28,7 @@ const App: React.FC = () => {
 
   if (!users) return <div>Loading...</div>;
   if (users.length === 0) return <div>No users</div>;
+  if (!userId) return <div>Loading...</div>;
 
   return (
     <>

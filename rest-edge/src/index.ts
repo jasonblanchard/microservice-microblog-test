@@ -144,9 +144,11 @@ async function bootstrap() {
   });
 
   app.get('/users/:id/follows', (request, response) => {
+    console.log('===', 'here', request.params.id);
     nc.request('follows.by.user', 1000, { userId: request.params.id})
       .then(message => {
         const follows = message.data;
+        console.log('+++', follows);
         response.json(follows);
       })
       .catch(error => {
